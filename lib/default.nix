@@ -4,7 +4,7 @@ let
     pathExists filter;
 
   inherit (nixos.lib) fold filterAttrs hasSuffix mapAttrs' nameValuePair removeSuffix
-    recursiveUpdate genAttrs nixosSystem mkForce;
+    recursiveUpdate genAttrs nixosSystem mkForce substring;
 
   # mapFilterAttrs ::
   #   (name -> value -> bool )
@@ -91,6 +91,8 @@ in
 
   overlays = pathsToImportedAttrs overlayPaths;
 
+  mkVersion = src: "${substring 0 8 src.lastModifiedDate}_${src.shortRev}";
+
   genPkgs = { self }:
     let inherit (self) inputs;
     in
@@ -105,6 +107,7 @@ in
             (overridesOverlay overridePkgs)
             self.overlay
             (final: prev: {
+              srcs = self.inputs.srcs.inputs;
               lib = (prev.lib or { }) // {
                 inherit (nixos.lib) nixosSystem;
                 flk = self.lib;
